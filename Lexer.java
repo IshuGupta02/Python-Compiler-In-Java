@@ -1,7 +1,8 @@
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
-import java.util.Scanner; // Import the Scanner class to read text files
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Lexer{
 
@@ -43,7 +44,7 @@ public class Lexer{
 
     }
     public static boolean checkString(String token, ArrayList<String> tokens){
-        if((token.charAt(0)=='"' && token.charAt(token.length()-1)=='"')){\
+        if((token.charAt(0)=='"' && token.charAt(token.length()-1)=='"')){
             for(int i=1; i<token.length()-1; i++){
                 if(token.charAt(i)=='"'){
                     return false;
@@ -56,7 +57,7 @@ public class Lexer{
             
         }
 
-        if((token.charAt(0)=='\'' && token.charAt(token.length()-1)=='\'')){\
+        if((token.charAt(0)=='\'' && token.charAt(token.length()-1)=='\'')){
             for(int i=1; i<token.length()-1; i++){
                 if(token.charAt(i)=='\''){
                     return false;
@@ -70,12 +71,11 @@ public class Lexer{
         }
 
         return false;
-        
 
     }
    
     public static boolean checkIdentifier(String token, ArrayList<String> tokens){
-        
+
         if(token.charAt(0)>='0' && token.charAt(0)<='9'){
             return false;
         }
@@ -97,57 +97,57 @@ public class Lexer{
 
     }
 
-    public static boolean checkOperator(char token, ArrayList<String> tokens){
+    public static boolean checkOperator(String token, ArrayList<String> tokens){
         // ':', '=', '+', '-', '/', '*', '==', '(', ')', '[', ']', '{', '}'
-        if(token == ':'){
+        if(token.equals(":")){
             tokens.add("COLON");
             return true;
         }
-        else if(token == '='){
+        else if(token.equals("=")){
             tokens.add("EQUALS");
             return true;
         }
-        else if(token == '+'){
+        else if(token.equals("+")){
             tokens.add("PLUS");
             return true;
         }
-        else if(token == '-'){
+        else if(token.equals("-")){
             tokens.add("MINUS");
             return true;
         }
-        else if(token == '/'){
+        else if(token.equals("/")){
             tokens.add("SLASH");
             return true;
         }
-        else if(token == '*'){
+        else if(token.equals("*")){
             tokens.add("STAR");
             return true;
         }
-        else if(token == '=='){
+        else if(token.equals("==")){
             tokens.add("DOUBLE_EQUALS");
             return true;
         }
-        else if(token == '('){
+        else if(token.equals("(")){
             tokens.add("OPEN_PAREN");
             return true;
         }
-        else if(token == ')'){
+        else if(token.equals(")")){
             tokens.add("CLOSE_PAREN");
             return true;
         }
-        else if(token == '['){
+        else if(token.equals("[")){
             tokens.add("OPEN_BRAC");
             return true;
         }
-        else if(token == ']'){
+        else if(token.equals("]")){
             tokens.add("CLOSE_BRAC");
             return true;
         }
-        else if(token == '{'){
+        else if(token.equals("{")){
             tokens.add("OPEN_CURLY");
             return true;
         }
-        else if(token == '}'){
+        else if(token.equals("}")){
             tokens.add("CLOSE_CURLY");
             return true;
         }
@@ -179,12 +179,20 @@ public class Lexer{
             return true;
 
         }
+        else if(token.equals("pass")){
+            tokens.add("PASS");
+            return true;
+        }
+        else if(token.equals("in")){
+            tokens.add("IN");
+            return true;
+        }
 
         return false;
 
     }
 
-    public static boolean fillToken(String token, ArrayList<String> tokens){
+    public static boolean fillToken(String tokenFound, ArrayList<String> tokens){
         if(!checkKeyword(tokenFound, tokens)){
             if(!checkInteger(tokenFound, tokens)){
                 if(!checkBoolean(tokenFound, tokens)){
@@ -199,24 +207,22 @@ public class Lexer{
             
         }
 
+        return true;
+
     }
 
     public static void checkToken(String token, ArrayList<String> tokens){
 
-        // :,=,+,-,/,*,==
-        // _,a-z,A-Z,0-9
-        // (, ), {, }, [,]
-
         int lastToken = -1;
 
         for(int i=0; i<token.length(); i++){
-            if(Arrays.asList(':', '=', '+', '-', '/', '*', '==', '(', ')', '[', ']', '{', '}').contains(token.charAt(i))){
-                String tokenFound = token.substring(lastToken,i);
+            if(Arrays.asList(':', '=', '+', '-', '/', '*', '(', ')', '[', ']', '{', '}').contains(token.charAt(i))){
+                String tokenFound = token.substring(lastToken+1,i);
                 
-                if(!fillToken(tokenFound, tokens)){
+                if(lastToken<i-1 && !fillToken(tokenFound, tokens)){
                     // error
                 }
-                if(!checkOperator(token.charAt(i), tokens)){
+                if(!checkOperator(token.charAt(i)+"", tokens)){
                     //error
                 }
 
@@ -229,9 +235,9 @@ public class Lexer{
         }
 
         if(lastToken!=token.length()-1){
-            String lastToken = token.substring(lastToken,i);
+            String token_left = token.substring(lastToken+1,token.length());
                 
-            if(!fillToken(lastToken, tokens)){
+            if(!fillToken(token_left, tokens)){
                 // error
             }
         }
