@@ -1,10 +1,13 @@
+package assignment;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Lexer{
+
+public class lexer{
 
     private static final String EMPTY_STRING = "";
  
@@ -302,8 +305,8 @@ public class Lexer{
 
     public static void main(String[] args){
 
-        ArrayList<String> tokens = tokenize();
-        System.out.println(tokens);
+        // ArrayList<String> tokens = tokenize();
+        // System.out.println(tokens);
         
     }
 }
