@@ -1,4 +1,4 @@
-package assignment;
+package lexer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -154,6 +154,14 @@ public class lexer{
             tokens.add("CLOSE_CURLY");
             return true;
         }
+        else if(token.equals("<")){
+            tokens.add("LESS_THAN");
+            return true;
+        }
+        else if(token.equals(">")){
+            tokens.add("GREATER_THAN");
+            return true;
+        }
         
         return false;
 
@@ -219,7 +227,7 @@ public class lexer{
         int lastToken = -1;
 
         for(int i=0; i<token.length(); i++){
-            if(Arrays.asList(':', '=', '+', '-', '/', '*', '(', ')', '[', ']', '{', '}').contains(token.charAt(i))){
+            if(Arrays.asList(':', '=', '+', '-', '/', '*', '(', ')', '[', ']', '{', '}', '>', '<').contains(token.charAt(i))){
                 String tokenFound = token.substring(lastToken+1,i);
                 
                 if(lastToken<i-1 && !fillToken(tokenFound, tokens)){
