@@ -10,3 +10,11 @@ for i in range(10):
 
 for x in "ishu":
     print(x)
+
+# if a = = b:
+    # pass
+
+if a==b: pass
+elif a:pass
+else: pass
+
