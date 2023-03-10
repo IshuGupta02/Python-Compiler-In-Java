@@ -123,11 +123,14 @@ public class parser{
                             i++;
                         }
 
-                        if(!tokens.get(i).equals("COLON")){
+                        if(!tokens.get(i).equals("COLON") || i!=tokens.size()-1){
                             return new RuntimeException("Invalid for loop");
                         }
                         
-                        
+                        expected_tabs = tab_count+1;
+                        exact_tabs_required = true;
+
+                        return true;
 
                     }
                     else{
@@ -144,15 +147,42 @@ public class parser{
 
         }
         catch(Exception e){
-            return new RuntimeException("Invalid for loop");
+            return false;
         }
-        
-            
+    }
 
+    public static boolean checkExpression(ArrayList<String> tokens, int first_token){
+        return true;
     }
 
     public static boolean checkAssignment(ArrayList<String> tokens, int tab_count){
-        return false;
+        
+        try{
+            if(token.get(0).equals("IDENTIFIER")){
+                if(token.get(1).equals("EQUALS")){
+                    if(checkExpression(tokens, 2)){
+                        exact_tabs_required = false;
+                        expected_tabs = tab_count;
+                        return true;
+                    }
+                }
+
+            }
+            else{
+                return false;
+            }
+
+        }
+        catch(Exception e){
+            return false;
+
+        }
+
+    }
+
+    public static boolean checkStatement(ArrayList<String> tokens, int tab_count){
+        // return false;
+        return checkAssignment(tokens, tab_count);
     }
 
     public static void checkSyntax(ArrayList<ArrayList<String>> line_seperated_tokens, ArrayList<Integer> tab_count){
@@ -177,8 +207,8 @@ public class parser{
 
             if(!checkIfElse(tokens, tab_count.get(i))){
                 if(!checkForLoop(tokens, tab_count.get(i))){
-                    if(!checkAssignment(tokens, tab_count.get(i))){
-                        throw new RuntimeException("Not a valid line at: "+i);
+                    if(!checkStatement(tokens, tab_count.get(i))){
+                        throw new RuntimeException("Not a valid syntax at: "+i);
                     }
                 }
             }
