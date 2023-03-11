@@ -8,7 +8,7 @@ public class parser{
 
     public static int expected_tabs = 0;
     public static boolean exact_tabs_required = true;
-    // public static boolean ifFound = false;
+    public static HashSet<Integer> if_indents = new HashSet<Integer>();
 
     public static ArrayList<ArrayList<String>> seperateLines(ArrayList<String> tokens){
         ArrayList<ArrayList<String>> new_list = new ArrayList();
@@ -84,32 +84,72 @@ public class parser{
     }
 
     public static boolean checkIfElse(ArrayList<String> tokens, int tab_count){
-        // if(tokens.get(0)=="IF"){
-        //     // ifFound = true;
 
-        // }
-        // else if(tokens.get(0)=="ELIF"){
-        //     if(!ifFound){
-        //         throw new RuntimeException("ELIF without IF found");
-        //     }
-        //     else{
+        if(tokens.get(0)=="IF"){
+            try{
+                if(!checkExpression(tokens, 1, tokens.size()-2)){
+                    throw new RuntimeException("Invalid ELIF condition");
+                }
+                if(!tokens.get(tokens.size()-1).equals("COLON")){
+                    throw new RuntimeException("Invalid End of line in ELIF");
+                }
+                if_indents.add(tab_count);
 
-        //     }
-        // }
-        // else if(tokens.get(0)=="ELSE"){
-        //     if(!ifFound){
-        //         throw new RuntimeException("ELIF without IF found");
-        //     }
-        //     else{
-                
-        //     }
-        // }
-        // else{
-        //     return false;
+            }
+            catch(Exception e){
+                throw new RuntimeException("Invalid IF statement");
+            }
+            
+        }
+        else if(tokens.get(0)=="ELIF"){
+            try{
+                if(!if_indents.contains(tab_count)){
+                    throw new RuntimeException("ELIF without IF found");
+                }
+                else{
+                    if(!checkExpression(tokens, 1, tokens.size()-2)){
+                        throw new RuntimeException("Invalid ELIF condition");
+                    }
+                    if(!tokens.get(tokens.size()-1).equals("COLON")){
+                        throw new RuntimeException("Invalid End of line in ELIF");
+                    }
+                }
 
-        // }
+            }
+            catch(Exception e){
+                throw new RuntimeException("Invalid ELIF statement");
+            }
+            
+        }
+        else if(tokens.get(0)=="ELSE"){
 
-        return false;
+            try{
+                if(!if_indents.contains(tab_count)){
+                    throw new RuntimeException("ELSE without IF found");
+                }
+                else{
+                    removeIfIndentsGreaterThanEqualTo(tab_count);
+                }
+
+                if(tokens.get(1).equals("COLON")){
+                    exact_tabs_required= true;
+                    expected_tabs = tab_count+1;
+                }
+                else{
+                    throw new RuntimeException("Invalid Else statement");
+                }
+
+            }
+            catch(Exception e){
+                throw new RuntimeException("Invalid Else statement");
+            }
+            
+        }
+        else{
+            return false;
+        }
+
+        return true;
 
     }
 
@@ -156,7 +196,7 @@ public class parser{
         }
     }
 
-    public static boolean checkExpression(ArrayList<String> tokens, int first_token){
+    public static boolean checkExpression(ArrayList<String> tokens, int first_token, int last_token){
         boolean result = true;
         /*stores digits*/
         Stack<String> st1 = new Stack<>();
@@ -164,7 +204,7 @@ public class parser{
         Stack<String> st2 = new Stack<>();
         boolean isTrue = true;
 
-        for (int i = first_token; i < tokens.size(); i++) {
+        for (int i = first_token; i <= last_token; i++) {
             String temp = tokens.get(i);
             /*if the character is a digit, we push it to st1*/
             if (isDigit(temp)) {
@@ -265,16 +305,12 @@ public class parser{
         return false;
     }
 
-    // public static boolean checkExpression(ArrayList<String> tokens, int first_token){
-    //     return true;
-    // }
-
     public static boolean checkAssignment(ArrayList<String> tokens, int tab_count){
         
         try{
             if(tokens.get(0).equals("IDENTIFIER")){
                 if(tokens.get(1).equals("EQUALS")){
-                    if(checkExpression(tokens, 2)){
+                    if(checkExpression(tokens, 2, tokens.size()-1)){
                         exact_tabs_required = false;
                         expected_tabs = tab_count;
                         return true;
@@ -310,37 +346,77 @@ public class parser{
         return false;
     }
 
+    public static void removeIfIndentsGreaterThanEqualTo(int tab_count){
+        HashSet<Integer> new_if_indents = new HashSet<>();
+        for(int i=0; i<tab_count; i++){
+            if(if_indents.contains(i)){
+                new_if_indents.add(i);
+            }
+        }
+
+        if_indents = new_if_indents;
+    }
+
+    public static void removeIfIndentsGreaterThan(int tab_count){
+        HashSet<Integer> new_if_indents = new HashSet<>();
+        for(int i=0; i<=tab_count; i++){
+            if(if_indents.contains(i)){
+                new_if_indents.add(i);
+            }
+        }
+
+        if_indents = new_if_indents;
+    }
+
     public static void checkSyntax(ArrayList<ArrayList<String>> line_seperated_tokens, ArrayList<Integer> tab_count){
         
+        boolean noError = true;
         for(int i=0; i<line_seperated_tokens.size(); i++){
-            ArrayList<String> tokens = line_seperated_tokens.get(i);
-            if(tokens.size()==0) continue;
-            
-            if(exact_tabs_required){
-                if(tab_count.get(i)!=expected_tabs){
-                    throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
-                }
-            }
-            else{
-                if(tab_count.get(i)>expected_tabs){
-                    throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
-                }
 
-            }
-
-            // ifelse, for, assignment -> declaration, expression
-
-            if(!checkIfElse(tokens, tab_count.get(i))){
-                if(!checkForLoop(tokens, tab_count.get(i))){
-                    if(!checkStatement(tokens, tab_count.get(i))){
-                        throw new RuntimeException("Not a valid syntax at: "+(i+1));
+            try{
+                ArrayList<String> tokens = line_seperated_tokens.get(i);
+                if(tokens.size()==0) continue;
+                
+                if(exact_tabs_required){
+                    if(tab_count.get(i)!=expected_tabs){
+                        throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
                     }
                 }
+                else{
+                    if(tab_count.get(i)>expected_tabs){
+                        throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
+                    }
+
+                }
+
+                // ifelse, for, assignment -> declaration, expression
+
+                if(!checkIfElse(tokens, tab_count.get(i))){
+                    if(!checkForLoop(tokens, tab_count.get(i))){
+                        if(!checkStatement(tokens, tab_count.get(i))){
+                            throw new RuntimeException("Not a valid construct at: "+(i+1));
+                        }
+                    }
+                    removeIfIndentsGreaterThanEqualTo(tab_count.get(i));
+                }
+                else{
+                    removeIfIndentsGreaterThan(tab_count.get(i));
+                }
+
+
             }
+            catch(Exception e){
+                noError = false;
+                System.out.println("Line: "+(i+1)+" : "+ e);
+            }
+            
 
         }
 
-        System.out.println("All okay in syntax!");
+        if(noError){
+            System.out.println("All okay in syntax!");
+        }
+
 
     }
 

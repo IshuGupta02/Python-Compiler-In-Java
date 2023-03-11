@@ -181,7 +181,7 @@ public class lexer{
 
         }
         else if(token.equals("elif")){
-            tokens.add("FALSE");
+            tokens.add("ELIF");
             return true;
 
         }

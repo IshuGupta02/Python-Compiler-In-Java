@@ -7,3 +7,10 @@ for i in range(10):
 
 for x in "ishu":
     a = 1+2
+
+if a:
+    a = a+1
+elif b:
+    b = True
+elif c:
+    c = True
