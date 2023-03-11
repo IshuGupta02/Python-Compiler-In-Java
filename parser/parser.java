@@ -10,6 +10,35 @@ public class parser{
     public static boolean exact_tabs_required = true;
     public static HashSet<Integer> if_indents = new HashSet<Integer>();
 
+    public static ArrayList<ArrayList<String>> repaceEqualDoubleEquals(ArrayList<ArrayList<String>> tokens){
+
+        ArrayList<ArrayList<String>> answer = new ArrayList<>();
+
+        for(int i=0; i<tokens.size(); i++){
+            ArrayList<String> line = tokens.get(i);
+
+            ArrayList<String> line_formated = new ArrayList<>();
+
+            for(int j=0; j<line.size(); j++){
+                if(j<line.size()-1 && line.get(j).equals("EQUALS") && line.get(j+1).equals("EQUALS")){
+                    line_formated.add("DOUBLE_EQUALS");
+                    j++;
+
+                }
+                else{
+                    line_formated.add(line.get(j));
+                }
+            }
+
+            // System.out.println(line_formated);
+
+            answer.add(line_formated);
+        }
+
+        return answer;
+
+    }
+
     public static ArrayList<ArrayList<String>> seperateLines(ArrayList<String> tokens){
         ArrayList<ArrayList<String>> new_list = new ArrayList();
         if(tokens.size()==0){
@@ -299,7 +328,7 @@ public class parser{
     }
 
     public static boolean isOperator(String c) {
-        if (c.equals("PLUS") || c.equals("MINUS") || c.equals("STAR") || c.equals("SLASH")) {
+        if (c.equals("PLUS") || c.equals("MINUS") || c.equals("STAR") || c.equals("SLASH") || c.equals("DOUBLE_EQUALS")) {
             return true;
         }
         return false;
@@ -429,11 +458,17 @@ public class parser{
 
             ArrayList<ArrayList<String>> line_seperated_tokens = seperateLines(tokens);
 
-            ArrayList<Integer> tab_count = removeIntermediateSpaces(line_seperated_tokens);
+            // System.out.println(line_seperated_tokens);
+
+            ArrayList<ArrayList<String>> doubleEqualsSorted = repaceEqualDoubleEquals(line_seperated_tokens);
+
+            // System.out.println(doubleEqualsSorted);
+
+            ArrayList<Integer> tab_count = removeIntermediateSpaces(doubleEqualsSorted);
 
             // ArrayList<ArrayList<String>> final_tokens = removeEmptyLines(line_seperated_tokens);
 
-            checkSyntax(line_seperated_tokens, tab_count);
+            checkSyntax(doubleEqualsSorted, tab_count);
 
         }
         catch(Exception e){

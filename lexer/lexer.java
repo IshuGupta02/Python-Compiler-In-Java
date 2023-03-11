@@ -232,9 +232,12 @@ public class lexer{
                 
                 if(lastToken<i-1 && !fillToken(tokenFound, tokens)){
                     // error
+                    System.out.println("Not a valid token: "+tokenFound);
+
                 }
                 if(!checkOperator(token.charAt(i)+"", tokens)){
                     //error
+                    System.out.println("Not a valid token: "+tokenFound);
                 }
 
                 lastToken = i;
@@ -250,6 +253,7 @@ public class lexer{
                 
             if(!fillToken(token_left, tokens)){
                 // error
+                System.out.println("Not a valid token: "+token_left);
             }
         }
         
@@ -303,7 +307,7 @@ public class lexer{
             }
             myReader.close();
         } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
+            System.out.println(e);
             e.printStackTrace();
         }
 
