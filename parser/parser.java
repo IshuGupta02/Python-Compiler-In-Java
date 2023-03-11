@@ -25,6 +25,21 @@ public class parser{
                     j++;
 
                 }
+                else if(j<line.size()-1 && line.get(j).equals("EXCLAMATION") && line.get(j+1).equals("EQUALS")){
+                    line_formated.add("NOT_EQUALS");
+                    j++;
+
+                }
+                else if(j<line.size()-1 && line.get(j).equals("LESS_THAN") && line.get(j+1).equals("EQUALS")){
+                    line_formated.add("LESS_THAN_EQUALS");
+                    j++;
+
+                }
+                else if(j<line.size()-1 && line.get(j).equals("GREATER_THAN") && line.get(j+1).equals("EQUALS")){
+                    line_formated.add("GREATER_THAN_EQUALS");
+                    j++;
+
+                }
                 else{
                     line_formated.add(line.get(j));
                 }
@@ -328,7 +343,17 @@ public class parser{
     }
 
     public static boolean isOperator(String c) {
-        if (c.equals("PLUS") || c.equals("MINUS") || c.equals("STAR") || c.equals("SLASH") || c.equals("DOUBLE_EQUALS")) {
+        if (c.equals("PLUS") || 
+        c.equals("MINUS") || 
+        c.equals("STAR") || 
+        c.equals("SLASH") || 
+        c.equals("DOUBLE_EQUALS") || 
+        c.equals("NOT_EQUALS") ||
+        c.equals("LESS_THAN") ||
+        c.equals("GREATER_THAN") ||
+        c.equals("LESS_THAN_EQUALS") ||
+        c.equals("GREATER_THAN_EQUALS")
+        ) {
             return true;
         }
         return false;

@@ -162,6 +162,10 @@ public class lexer{
             tokens.add("GREATER_THAN");
             return true;
         }
+        else if(token.equals("!")){
+            tokens.add("EXCLAMATION");
+            return true;
+        }
         
         return false;
 
@@ -198,6 +202,7 @@ public class lexer{
             tokens.add("IN");
             return true;
         }
+        
 
         return false;
 
@@ -227,7 +232,7 @@ public class lexer{
         int lastToken = -1;
 
         for(int i=0; i<token.length(); i++){
-            if(Arrays.asList(':', '=', '+', '-', '/', '*', '(', ')', '[', ']', '{', '}', '>', '<').contains(token.charAt(i))){
+            if(Arrays.asList(':', '=', '+', '-', '/', '*', '(', ')', '[', ']', '{', '}', '>', '<', '!').contains(token.charAt(i))){
                 String tokenFound = token.substring(lastToken+1,i);
                 
                 if(lastToken<i-1 && !fillToken(tokenFound, tokens)){
