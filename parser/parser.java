@@ -70,7 +70,7 @@ public class parser{
         return tabCount;
     }
 
-    public static void removeEmptyLines(ArrayList<ArrayList<String>> line_seperated_tokens){
+    public static ArrayList<ArrayList<String>> removeEmptyLines(ArrayList<ArrayList<String>> line_seperated_tokens){
 
         ArrayList<ArrayList<String>> final_tokens = new ArrayList();
 
@@ -114,6 +114,7 @@ public class parser{
     }
 
     public static boolean checkForLoop(ArrayList<String> tokens, int tab_count){
+        // System.out.println(tokens);
         try{
             if(tokens.get(0).equals("FOR")){
                 if(tokens.get(1).equals("IDENTIFIER")){
@@ -124,7 +125,9 @@ public class parser{
                         }
 
                         if(!tokens.get(i).equals("COLON") || i!=tokens.size()-1){
-                            return new RuntimeException("Invalid for loop");
+
+                            // System.out.println("no1");
+                            throw new RuntimeException("Invalid for loop");
                         }
                         
                         expected_tabs = tab_count+1;
@@ -134,11 +137,13 @@ public class parser{
 
                     }
                     else{
-                        return new RuntimeException("Invalid for loop");
+                        // System.out.println("no2");
+                        throw new RuntimeException("Invalid for loop");
                     }
                 }
                 else{
-                    return new RuntimeException("Invalid for loop");
+                    // System.out.println("no3");
+                    throw new RuntimeException("Invalid for loop");
                 }
             }
             else{
@@ -152,19 +157,134 @@ public class parser{
     }
 
     public static boolean checkExpression(ArrayList<String> tokens, int first_token){
-        return true;
+        boolean result = true;
+        /*stores digits*/
+        Stack<String> st1 = new Stack<>();
+        /*stores operators and parantheses*/
+        Stack<String> st2 = new Stack<>();
+        boolean isTrue = true;
+
+        for (int i = first_token; i < tokens.size(); i++) {
+            String temp = tokens.get(i);
+            /*if the character is a digit, we push it to st1*/
+            if (isDigit(temp)) {
+                st1.push(temp);
+                if(isTrue) {
+                    isTrue = false;
+                }
+                else {
+                    return false;
+                }
+            }
+            /*if the character is an operator, we push it to st2*/
+            else if (isOperator(temp)) {
+                st2.push(temp);
+                isTrue = true;
+            }
+            else {
+                /*if the character is an opening parantheses we push it to st2*/
+                if(isBracketOpen(temp)) {
+                    st2.push(temp);
+                }
+                /*If it is a closing bracket*/
+                else {
+                    boolean flag = true;
+                    /*we keep on removing characters until we find the corresponding
+                    open bracket or the stack becomes empty*/
+                    while (!st2.isEmpty()) {
+                        String c = st2.pop();
+                        if (c.equals(getCorrespondingChar(temp))) {
+                            flag = false;
+                            break;
+                        }
+                        else {
+                            if (st1.size() < 2) {
+                                return false;
+                            }
+                            else {
+                                st1.pop();
+                            }
+                        }
+                    }
+                    if (flag) {
+                        return false;
+                    }
+
+                }
+            }
+        }
+        while (!st2.isEmpty()) {
+            String c = st2.pop();
+            if (!isOperator(c)) {
+                return false;
+            }
+            if (st1.size() < 2) {
+                return false;
+            }
+            else {
+                st1.pop();
+            }
+        }
+        if (st1.size() > 1 || !st2.isEmpty()) {
+            return false;
+        }
+        return result;
     }
+    public static String getCorrespondingChar(String c) {
+        if (c.equals("OPEN_PAREN")) {
+            return "CLOSE_PAREN";
+        }
+        else if (c.equals("OPEN_BRAC")) {
+            return "CLOSE_BRAC";
+        }
+        return "CLOSE_CURLY";
+    }
+
+    public static boolean isBracketOpen(String c) {
+        if (c.equals("OPEN_PAREN") || c.equals("OPEN_BRAC")|| c.equals("OPEN_CURLY")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isDigit(String c) {
+        if (c.equals("CONST_INTEGER") || 
+        c.equals("CONST_FALSE") || 
+        c.equals("CONST_TRUE") || 
+        c.equals("CONST_STRING") ||
+        c.equals("IDENTIFIER")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isOperator(String c) {
+        if (c.equals("PLUS") || c.equals("MINUS") || c.equals("STAR") || c.equals("SLASH")) {
+            return true;
+        }
+        return false;
+    }
+
+    // public static boolean checkExpression(ArrayList<String> tokens, int first_token){
+    //     return true;
+    // }
 
     public static boolean checkAssignment(ArrayList<String> tokens, int tab_count){
         
         try{
-            if(token.get(0).equals("IDENTIFIER")){
-                if(token.get(1).equals("EQUALS")){
+            if(tokens.get(0).equals("IDENTIFIER")){
+                if(tokens.get(1).equals("EQUALS")){
                     if(checkExpression(tokens, 2)){
                         exact_tabs_required = false;
                         expected_tabs = tab_count;
                         return true;
                     }
+                    else{
+                        return false;
+                    }
+                }
+                else{
+                    return false;
                 }
 
             }
@@ -181,24 +301,29 @@ public class parser{
     }
 
     public static boolean checkStatement(ArrayList<String> tokens, int tab_count){
-        // return false;
-        return checkAssignment(tokens, tab_count);
+        if(checkAssignment(tokens, tab_count)){
+            expected_tabs = tab_count;
+            exact_tabs_required = false;
+            return true;
+        }
+
+        return false;
     }
 
     public static void checkSyntax(ArrayList<ArrayList<String>> line_seperated_tokens, ArrayList<Integer> tab_count){
         
         for(int i=0; i<line_seperated_tokens.size(); i++){
             ArrayList<String> tokens = line_seperated_tokens.get(i);
-            if(token.size()==0) continue;
+            if(tokens.size()==0) continue;
             
             if(exact_tabs_required){
                 if(tab_count.get(i)!=expected_tabs){
-                    throw RuntimeException("Unexpected Indent at Line number: "+i);
+                    throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
                 }
             }
             else{
                 if(tab_count.get(i)>expected_tabs){
-                    throw RuntimeException("Unexpected Indent at Line number: "+i);
+                    throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
                 }
 
             }
@@ -208,7 +333,7 @@ public class parser{
             if(!checkIfElse(tokens, tab_count.get(i))){
                 if(!checkForLoop(tokens, tab_count.get(i))){
                     if(!checkStatement(tokens, tab_count.get(i))){
-                        throw new RuntimeException("Not a valid syntax at: "+i);
+                        throw new RuntimeException("Not a valid syntax at: "+(i+1));
                     }
                 }
             }
