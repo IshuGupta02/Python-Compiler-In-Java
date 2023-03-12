@@ -97,7 +97,7 @@ public class parser{
                 }
                 else if(old_list.get(j).equals("SPACE")){
                     if(!nonSpaceFound){
-                        throw new RuntimeException("Unexpected Indent at Line number: "+i);
+                        System.out.println("Unexpected Indent at Line number: "+(i+1));
                     }
                 }
                 else{
@@ -132,10 +132,14 @@ public class parser{
         if(tokens.get(0)=="IF"){
             try{
                 if(!checkExpression(tokens, 1, tokens.size()-2)){
-                    throw new RuntimeException("Invalid ELIF condition");
+                    throw new RuntimeException("Invalid IF condition");
                 }
                 if(!tokens.get(tokens.size()-1).equals("COLON")){
-                    throw new RuntimeException("Invalid End of line in ELIF");
+                    throw new RuntimeException("Invalid End of line in IF");
+                }
+                else{
+                    exact_tabs_required= true;
+                    expected_tabs = tab_count+1;
                 }
                 if_indents.add(tab_count);
 
@@ -156,6 +160,10 @@ public class parser{
                     }
                     if(!tokens.get(tokens.size()-1).equals("COLON")){
                         throw new RuntimeException("Invalid End of line in ELIF");
+                    }
+                    else{
+                        exact_tabs_required= true;
+                        expected_tabs = tab_count+1;
                     }
                 }
 
@@ -241,16 +249,13 @@ public class parser{
     }
 
     public static boolean checkExpression(ArrayList<String> tokens, int first_token, int last_token){
+        if(first_token>last_token) return false;
         boolean result = true;
-        /*stores digits*/
         Stack<String> st1 = new Stack<>();
-        /*stores operators and parantheses*/
         Stack<String> st2 = new Stack<>();
         boolean isTrue = true;
-
         for (int i = first_token; i <= last_token; i++) {
             String temp = tokens.get(i);
-            /*if the character is a digit, we push it to st1*/
             if (isDigit(temp)) {
                 st1.push(temp);
                 if(isTrue) {
@@ -260,21 +265,16 @@ public class parser{
                     return false;
                 }
             }
-            /*if the character is an operator, we push it to st2*/
             else if (isOperator(temp)) {
                 st2.push(temp);
                 isTrue = true;
             }
             else {
-                /*if the character is an opening parantheses we push it to st2*/
                 if(isBracketOpen(temp)) {
                     st2.push(temp);
                 }
-                /*If it is a closing bracket*/
                 else {
                     boolean flag = true;
-                    /*we keep on removing characters until we find the corresponding
-                    open bracket or the stack becomes empty*/
                     while (!st2.isEmpty()) {
                         String c = st2.pop();
                         if (c.equals(getCorrespondingChar(temp))) {
@@ -293,7 +293,6 @@ public class parser{
                     if (flag) {
                         return false;
                     }
-
                 }
             }
         }
@@ -423,28 +422,36 @@ public class parser{
     }
 
     public static void checkSyntax(ArrayList<ArrayList<String>> line_seperated_tokens, ArrayList<Integer> tab_count){
-        
+        // System.out.println(tab_count);
         boolean noError = true;
         for(int i=0; i<line_seperated_tokens.size(); i++){
 
             try{
+                // System.out.println("Line: "+(i+1)+" :"+exact_tabs_required);
                 ArrayList<String> tokens = line_seperated_tokens.get(i);
                 if(tokens.size()==0) continue;
                 
                 if(exact_tabs_required){
                     if(tab_count.get(i)!=expected_tabs){
+                        
+                        removeIfIndentsGreaterThanEqualTo(tab_count.get(i));
+                        exact_tabs_required = false;
+                        expected_tabs = tab_count.get(i);
+                        // System.out.println("here");
                         throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
                     }
                 }
                 else{
                     if(tab_count.get(i)>expected_tabs){
+                        removeIfIndentsGreaterThanEqualTo(tab_count.get(i));
+                        exact_tabs_required = false;
+                        expected_tabs = tab_count.get(i);
+                        // System.out.println("here2");
                         throw new RuntimeException("Unexpected Indent at Line number: "+(i+1));
+
                     }
 
                 }
-
-                // ifelse, for, assignment -> declaration, expression
-
                 if(!checkIfElse(tokens, tab_count.get(i))){
                     if(!checkForLoop(tokens, tab_count.get(i))){
                         if(!checkStatement(tokens, tab_count.get(i))){
@@ -456,22 +463,16 @@ public class parser{
                 else{
                     removeIfIndentsGreaterThan(tab_count.get(i));
                 }
-
-
             }
             catch(Exception e){
                 noError = false;
                 System.out.println("Line: "+(i+1)+" : "+ e);
             }
-            
-
         }
 
         if(noError){
             System.out.println("All okay in syntax!");
         }
-
-
     }
 
     public static void main(String args[]){
@@ -483,15 +484,9 @@ public class parser{
 
             ArrayList<ArrayList<String>> line_seperated_tokens = seperateLines(tokens);
 
-            // System.out.println(line_seperated_tokens);
-
             ArrayList<ArrayList<String>> doubleEqualsSorted = repaceEqualDoubleEquals(line_seperated_tokens);
 
-            // System.out.println(doubleEqualsSorted);
-
             ArrayList<Integer> tab_count = removeIntermediateSpaces(doubleEqualsSorted);
-
-            // ArrayList<ArrayList<String>> final_tokens = removeEmptyLines(line_seperated_tokens);
 
             checkSyntax(doubleEqualsSorted, tab_count);
 

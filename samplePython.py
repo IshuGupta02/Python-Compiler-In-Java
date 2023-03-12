@@ -1,6 +1,7 @@
-a=10
-b = 20
-c = True
+a = 1
+b = 20+30
+c = 10<2
+d = 10+1
 
 for i in range(10):
     a = b
@@ -8,9 +9,11 @@ for i in range(10):
 for x in "ishu":
     a = 1+2
 
-if a>= b:
+if a:
     a = a+1
 elif b:
     b = True
 elif c:
-    c = True
+    c = "jikdn"
+
+a = 20+30*10/b
